@@ -16,15 +16,15 @@ const PeriodTrackerPage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     cycleLength: settings.cycleLength,
-    periodLength: settings.periodLength,
-    lastPeriodStart: settings.lastPeriodStart.toISOString().split('T')[0],
+    periodDuration: settings.periodDuration,
+    lastPeriodStart: settings.lastPeriodStart || '',
   });
 
   useEffect(() => {
     setFormData({
       cycleLength: settings.cycleLength,
-      periodLength: settings.periodLength,
-      lastPeriodStart: settings.lastPeriodStart.toISOString().split('T')[0],
+      periodDuration: settings.periodDuration,
+      lastPeriodStart: settings.lastPeriodStart || '',
     });
   }, [settings]);
 
@@ -38,7 +38,7 @@ const PeriodTrackerPage = () => {
       return;
     }
 
-    if (formData.periodLength < 2 || formData.periodLength > 10) {
+    if (formData.periodDuration < 2 || formData.periodDuration > 10) {
       toast({
         title: 'Invalid period length',
         description: 'Period length should be between 2-10 days',
@@ -49,8 +49,8 @@ const PeriodTrackerPage = () => {
 
     updateSettings({
       cycleLength: formData.cycleLength,
-      periodLength: formData.periodLength,
-      lastPeriodStart: new Date(formData.lastPeriodStart),
+      periodDuration: formData.periodDuration,
+      lastPeriodStart: formData.lastPeriodStart,
     });
 
     setIsEditing(false);
@@ -60,19 +60,7 @@ const PeriodTrackerPage = () => {
     });
   };
 
-  const daysUntilPeriod = Math.max(
-    0,
-    Math.ceil(
-      (status.nextPeriodStart.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
-    )
-  );
-
-  const daysUntilOvulation = Math.max(
-    0,
-    Math.ceil(
-      (status.ovulationDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
-    )
-  );
+  const daysUntilPeriod = status.daysUntil !== null ? Math.max(0, status.daysUntil) : 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-rose-50">
@@ -135,18 +123,10 @@ const PeriodTrackerPage = () => {
             <CardContent className="pt-6">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-sm text-purple-600 font-semibold mb-1">Ovulation</p>
-                  <p className="text-3xl font-bold text-purple-700">{daysUntilOvulation}</p>
-                  <p className="text-xs text-purple-600 mt-1">days away</p>
-                  {status.ovulationDate && (
-                    <p className="text-xs text-gray-600 mt-2">
-                      {status.ovulationDate.toLocaleDateString('en-US', {
-                        weekday: 'short',
-                        month: 'short',
-                        day: 'numeric',
-                      })}
-                    </p>
-                  )}
+                  <p className="text-sm text-purple-600 font-semibold mb-1">Ovulation (Approx)</p>
+                  <p className="text-3xl font-bold text-purple-700">{Math.max(0, Math.floor(settings.cycleLength / 2) - (status.daysUntil !== null ? status.daysUntil : 0))}</p>
+                  <p className="text-xs text-purple-600 mt-1">days away (approx)</p>
+                  <p className="text-xs text-gray-500 mt-2">Typically around cycle midpoint</p>
                 </div>
                 <div className="w-12 h-12 rounded-lg bg-purple-200/50 flex items-center justify-center">
                   <Heart className="w-6 h-6 text-purple-600" />
@@ -155,22 +135,19 @@ const PeriodTrackerPage = () => {
             </CardContent>
           </Card>
 
-          {/* Cycle Phase */}
+          {/* Status */}
           <Card className="bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-200">
             <CardContent className="pt-6">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-sm text-teal-600 font-semibold mb-1">Current Phase</p>
-                  <p className="text-2xl font-bold text-teal-700 capitalize">{status.phase}</p>
-                  <p className="text-xs text-teal-600 mt-2">
-                    {status.phase === 'menstrual'
-                      ? 'Focus on rest and self-care'
-                      : status.phase === 'follicular'
-                      ? 'Energy levels rising'
-                      : status.phase === 'ovulation'
-                      ? 'Peak fertility window'
-                      : 'Prepare for next cycle'}
-                  </p>
+                  <p className="text-sm text-teal-600 font-semibold mb-1">Status</p>
+                  <p className="text-lg font-bold text-teal-700">{status.countdownLabel}</p>
+                  {status.isDelayed && (
+                    <p className="text-xs text-red-600 mt-2">Period is delayed</p>
+                  )}
+                  {!status.isDelayed && status.daysUntil !== null && status.daysUntil <= 7 && (
+                    <p className="text-xs text-amber-600 mt-2">Period coming soon</p>
+                  )}
                 </div>
                 <div className="w-12 h-12 rounded-lg bg-teal-200/50 flex items-center justify-center">
                   <Activity className="w-6 h-6 text-teal-600" />
@@ -190,7 +167,7 @@ const PeriodTrackerPage = () => {
                       <span className="font-semibold">Cycle:</span> {settings.cycleLength} days
                     </p>
                     <p className="text-sm text-gray-700">
-                      <span className="font-semibold">Period:</span> {settings.periodLength} days
+                      <span className="font-semibold">Period:</span> {settings.periodDuration} days
                     </p>
                   </div>
                 </div>
@@ -240,11 +217,11 @@ const PeriodTrackerPage = () => {
                     type="number"
                     min="2"
                     max="10"
-                    value={formData.periodLength}
+                    value={formData.periodDuration}
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        periodLength: parseInt(e.target.value) || 5,
+                        periodDuration: parseInt(e.target.value) || 5,
                       })
                     }
                     className="border-2 border-blue-300 focus:border-blue-500"
