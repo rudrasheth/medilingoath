@@ -200,6 +200,7 @@ const JanAushadhiFinder = () => {
   };
 
   const mapPoint = coords ?? defaultCoords;
+  const hasLiveLocation = Boolean(coords);
   const bboxSize = 0.02; // about ~2km box around point
   const bbox = [
     mapPoint.lng - bboxSize,
@@ -207,9 +208,15 @@ const JanAushadhiFinder = () => {
     mapPoint.lng + bboxSize,
     mapPoint.lat + bboxSize,
   ].join("%2C");
-  // Use Google Maps embed centered near user's location for Jan Aushadhi search
-  const mapUrl = `https://www.google.com/maps?q=${encodeURIComponent(`Jan Aushadhi near ${mapPoint.lat},${mapPoint.lng}`)}&z=14&output=embed`;
-  const mapsSearchUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`Jan Aushadhi near ${mapPoint.lat},${mapPoint.lng}`)}`;
+
+  // Show user's accepted location directly on the embedded map; otherwise fall back to a Jan Aushadhi search area
+  const mapUrl = hasLiveLocation
+    ? `https://www.google.com/maps?q=${mapPoint.lat},${mapPoint.lng}&z=15&output=embed`
+    : `https://www.google.com/maps?q=${encodeURIComponent(`Jan Aushadhi near ${mapPoint.lat},${mapPoint.lng}`)}&z=14&output=embed`;
+
+  const mapsSearchUrl = hasLiveLocation
+    ? `https://www.google.com/maps/search/?api=1&query=${mapPoint.lat},${mapPoint.lng}`
+    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`Jan Aushadhi near ${mapPoint.lat},${mapPoint.lng}`)}`;
 
   return (
     <div className="space-y-4">

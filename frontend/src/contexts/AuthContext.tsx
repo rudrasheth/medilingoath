@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { toast } from '@/components/ui/use-toast';
+import { API_BASE_URL } from '@/lib/config';
 
 interface User {
   id: string;
@@ -17,14 +18,17 @@ interface AuthContextType {
   logout: () => void;
   forgotPassword: (email: string) => Promise<void>;
   resetPassword: (email: string, otp: string, newPassword: string) => Promise<void>;
+  checkAuthStatus: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(() => {
     const savedUser = localStorage.getItem('medilingo_user');
+    const token = localStorage.getItem('medilingo_token');
+    console.log('🔄 AuthProvider init - User:', savedUser ? 'Found' : 'None');
+    console.log('🔄 AuthProvider init - Token:', token ? 'Found' : 'None');
     return savedUser ? JSON.parse(savedUser) : null;
   });
 
@@ -33,20 +37,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (user) {
       localStorage.setItem('medilingo_user', JSON.stringify(user));
+      // Also check if we have a token
+      const token = localStorage.getItem('medilingo_token');
+      if (!token) {
+        console.warn('⚠️ User exists but no token found - user may need to re-login');
+      }
     } else {
       localStorage.removeItem('medilingo_user');
+      localStorage.removeItem('medilingo_token');
     }
   }, [user]);
 
   const login = async (email: string, password: string) => {
     try {
       console.log('🔐 Attempting login for:', email);
+      console.log('🌐 API URL:', `${API_BASE_URL}/api/auth/login`);
       const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // Important for session cookies
         body: JSON.stringify({ email, password }),
       });
 
@@ -57,6 +67,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       const data = await response.json();
       console.log('✅ Login successful:', data.user);
+      console.log('🔑 Token received:', data.token ? 'Yes' : 'No');
+      
+      // Store the JWT token
+      if (data.token) {
+        localStorage.setItem('medilingo_token', data.token);
+        console.log('💾 Token stored in localStorage');
+      } else {
+        console.error('❌ No token in response!');
+      }
       
       const userData: User = {
         id: data.user.id,
@@ -75,7 +94,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error('❌ Login error:', error);
       toast({
         title: 'Login failed',
-        description: error.message || 'Invalid email or password',
+        description: error.message || 'Failed to connect to server',
         variant: 'destructive',
       });
       throw error;
@@ -90,7 +109,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // Important for session cookies
         body: JSON.stringify({ email, password, age, name, gender }),
       });
 
@@ -101,6 +119,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       const data = await response.json();
       console.log('✅ Signup successful:', data.user);
+      console.log('🔑 Token received:', data.token ? 'Yes' : 'No');
+      
+      // Store the JWT token
+      if (data.token) {
+        localStorage.setItem('medilingo_token', data.token);
+        console.log('💾 Token stored in localStorage');
+      } else {
+        console.error('❌ No token in response!');
+      }
       
       const userData: User = {
         id: data.user.id,
@@ -128,6 +155,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = () => {
     setUser(null);
+    localStorage.removeItem('medilingo_token');
+    localStorage.removeItem('medilingo_user');
     toast({
       title: 'Logged out',
       description: 'See you next time!',
@@ -202,8 +231,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const checkAuthStatus = () => {
+    const token = localStorage.getItem('medilingo_token');
+    const savedUser = localStorage.getItem('medilingo_user');
+    
+    if (!token || !savedUser) {
+      console.warn('⚠️ Missing token or user data - forcing logout');
+      setUser(null);
+      localStorage.removeItem('medilingo_token');
+      localStorage.removeItem('medilingo_user');
+      return false;
+    }
+    
+    return true;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, signup, logout, forgotPassword, resetPassword }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, login, signup, logout, forgotPassword, resetPassword, checkAuthStatus }}>
       {children}
     </AuthContext.Provider>
   );

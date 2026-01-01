@@ -69,6 +69,7 @@ const AmbulanceFinder = () => {
   };
 
   const mapPoint = coords ?? defaultCoords;
+  const hasLiveLocation = Boolean(coords);
   const bboxSize = 0.02;
   const bbox = [
     mapPoint.lng - bboxSize,
@@ -76,9 +77,14 @@ const AmbulanceFinder = () => {
     mapPoint.lng + bboxSize,
     mapPoint.lat + bboxSize,
   ].join("%2C");
-  // Use Google Maps embed centered near user's location for ambulance search
-  const mapUrl = `https://www.google.com/maps?q=${encodeURIComponent(`ambulance near ${mapPoint.lat},${mapPoint.lng}`)}&z=14&output=embed`;
-  const mapsNavUrl = `https://www.google.com/maps/search/?api=1&query=ambulance+near+${mapPoint.lat},${mapPoint.lng}`;
+  // Show user's accepted location directly when available; otherwise keep the ambulance search area
+  const mapUrl = hasLiveLocation
+    ? `https://www.google.com/maps?q=${mapPoint.lat},${mapPoint.lng}&z=15&output=embed`
+    : `https://www.google.com/maps?q=${encodeURIComponent(`ambulance near ${mapPoint.lat},${mapPoint.lng}`)}&z=14&output=embed`;
+
+  const mapsNavUrl = hasLiveLocation
+    ? `https://www.google.com/maps/search/?api=1&query=${mapPoint.lat},${mapPoint.lng}`
+    : `https://www.google.com/maps/search/?api=1&query=ambulance+near+${mapPoint.lat},${mapPoint.lng}`;
 
   return (
     <div className="space-y-4 max-h-[60vh] overflow-y-auto">

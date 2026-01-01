@@ -22,12 +22,13 @@ import {
 import { useState } from "react";
 import { usePlan } from "@/contexts/PlanContext";
 import LanguageSwitcher from "./LanguageSwitcher";
-import ProfileDialog from "@/components/ProfileDialog";
+import { useNavigate } from "react-router-dom";
 
 const GlassNav = () => {
   const { t } = useLanguage();
   const { isAuthenticated, login, logout, signup, forgotPassword, resetPassword } = useAuth();
   const { plan, setPlan } = usePlan();
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -47,7 +48,6 @@ const GlassNav = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -304,7 +304,7 @@ const GlassNav = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setIsProfileOpen(true)}
+                onClick={() => navigate('/profile')}
                 className="gap-2"
               >
                 <User className="w-4 h-4" />
@@ -701,9 +701,6 @@ const GlassNav = () => {
           </Dialog>
         </div>
       </div>
-
-      {/* Profile Dialog */}
-      <ProfileDialog open={isProfileOpen} onOpenChange={setIsProfileOpen} />
     </header>
   );
 };

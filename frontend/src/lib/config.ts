@@ -1,9 +1,10 @@
 // API Configuration
-const isDevelopment = import.meta.env.DEV;
+const isDevelopment = false; // Force production mode
 
-export const API_BASE_URL = isDevelopment 
-  ? 'http://localhost:5001'
-  : import.meta.env.VITE_API_URL || 'https://server-kappa-blush.vercel.app';
+export const API_BASE_URL = 'https://medilingoath.vercel.app';
+
+console.log('🔧 Config loaded - isDevelopment:', isDevelopment);
+console.log('🔧 Config loaded - API_BASE_URL:', API_BASE_URL);
 
 export const FRONTEND_URL = isDevelopment
   ? 'http://localhost:5173'

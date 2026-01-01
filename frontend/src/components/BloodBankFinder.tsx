@@ -65,6 +65,7 @@ const BloodBankFinder = () => {
   };
 
   const mapPoint = coords ?? defaultCoords;
+  const hasLiveLocation = Boolean(coords);
 
   useEffect(() => {
     // On mount, try to fetch with default coords
@@ -81,9 +82,14 @@ const BloodBankFinder = () => {
     mapPoint.lng + bboxSize,
     mapPoint.lat + bboxSize,
   ].join("%2C");
-  // Use Google Maps embed centered near user's location for blood bank search
-  const mapUrl = `https://www.google.com/maps?q=${encodeURIComponent(`blood bank near ${mapPoint.lat},${mapPoint.lng}`)}&z=14&output=embed`;
-  const mapsSearchUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`blood bank near ${mapPoint.lat},${mapPoint.lng}`)}`;
+  // Show user's accepted location directly when available; otherwise keep the blood bank search area
+  const mapUrl = hasLiveLocation
+    ? `https://www.google.com/maps?q=${mapPoint.lat},${mapPoint.lng}&z=15&output=embed`
+    : `https://www.google.com/maps?q=${encodeURIComponent(`blood bank near ${mapPoint.lat},${mapPoint.lng}`)}&z=14&output=embed`;
+
+  const mapsSearchUrl = hasLiveLocation
+    ? `https://www.google.com/maps/search/?api=1&query=${mapPoint.lat},${mapPoint.lng}`
+    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`blood bank near ${mapPoint.lat},${mapPoint.lng}`)}`;
 
   const handleCall = (number: string) => {
     window.location.href = `tel:${number}`;
