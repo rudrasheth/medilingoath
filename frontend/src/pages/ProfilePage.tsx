@@ -438,7 +438,7 @@ const ProfilePage = () => {
               </div>
             </div>
 
-            {/* Personal Information Card */}
+            {/* PART 1: Personal Information Card */}
             <Card className="border-0 shadow-lg rounded-xl overflow-hidden">
               <div className="bg-gradient-to-r from-teal-50 to-blue-50 border-b border-teal-100 px-3 sm:px-5 py-2 sm:py-3">
                 <div className="flex items-center justify-between gap-2">
@@ -464,7 +464,7 @@ const ProfilePage = () => {
                 {!isEditing ? (
                   // View Mode
                   <div className="space-y-2">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div className="space-y-2">
                       {/* Full Name */}
                       <div className="bg-gradient-to-br from-teal-50 to-teal-100/50 rounded-lg p-3 border border-teal-200/50">
                         <Label className="text-xs font-semibold text-gray-600 flex items-center gap-1.5">
@@ -509,47 +509,6 @@ const ProfilePage = () => {
                         </p>
                       </div>
                     </div>
-
-                    {/* Account Actions */}
-                    <div className="pt-2 border-t border-gray-200 space-y-2">
-                      <Button
-                        onClick={() => setChangePasswordMode(true)}
-                        variant="outline"
-                        className="w-full flex items-center justify-center gap-2 rounded-full border-2 border-yellow-400 text-yellow-800 font-bold py-2 bg-gradient-to-r from-yellow-50 to-yellow-100 hover:from-yellow-100 hover:to-yellow-200 shadow-sm transition-all duration-200 text-sm"
-                      >
-                        <span role="img" aria-label="password">🔒</span> Change Password
-                      </Button>
-
-                      {/* Redeem Sharing Code - Only for Male Users */}
-                      {profile.gender === 'Male' && (
-                        <Button
-                          onClick={() => setShowRedeemModal(true)}
-                          variant="outline"
-                          className="w-full flex items-center justify-center gap-2 rounded-full border-2 border-blue-400 text-blue-800 font-bold py-2 bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 shadow-sm transition-all duration-200 text-sm"
-                        >
-                          <Key className="w-4 h-4" />
-                          Redeem Sharing Code
-                        </Button>
-                      )}
-                    </div>
-
-                    {/* Period Tracker - Only for Female Users */}
-                    {profile.gender === 'Female' && (
-                      <div className="pt-4 border-t border-gray-200">
-                        <div className="bg-gradient-to-br from-pink-50 to-rose-100/50 rounded-lg p-4 border border-pink-200/50">
-                          <h3 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                            <span role="img" aria-label="calendar">🗓️</span>
-                            Period Tracker
-                          </h3>
-                          <Button
-                            onClick={() => navigate('/period-tracker')}
-                            className="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-medium py-2 rounded-lg text-sm"
-                          >
-                            Track Your Cycle
-                          </Button>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 ) : (
                   // Edit Mode
@@ -772,17 +731,217 @@ const ProfilePage = () => {
               </CardContent>
             </Card>
 
-            {/* Sharing Code Section - Visible only for Female users */}
-            {user?.gender === 'Female' && (
-              <Card className="border-0 shadow-lg rounded-xl overflow-hidden mt-4">
-                <div className="bg-gradient-to-r from-rose-50 to-pink-50 border-b border-rose-100 px-5 py-3">
-                  <div className="flex items-center justify-between gap-2">
+            {/* PART 2: Account Actions Card */}
+            <Card className="border-0 shadow-lg rounded-xl overflow-hidden">
+              <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border-b border-yellow-100 px-3 sm:px-5 py-2 sm:py-3">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-yellow-100 flex items-center justify-center">
+                    <span className="text-yellow-600 text-xs font-bold">⚙️</span>
+                  </div>
+                  <h2 className="text-sm sm:text-base font-bold text-gray-900">Account Actions</h2>
+                </div>
+              </div>
+              <CardContent className="pt-3 sm:pt-4 pb-3 sm:pb-4">
+                <div className="space-y-2">
+                  <Button
+                    onClick={() => setChangePasswordMode(true)}
+                    variant="outline"
+                    className="w-full flex items-center justify-center gap-2 rounded-full border-2 border-yellow-400 text-yellow-800 font-bold py-2 bg-gradient-to-r from-yellow-50 to-yellow-100 hover:from-yellow-100 hover:to-yellow-200 shadow-sm transition-all duration-200 text-sm"
+                  >
+                    <span role="img" aria-label="password">🔒</span> Change Password
+                  </Button>
+
+                  {/* Redeem Sharing Code - Only for Male Users */}
+                  {profile.gender === 'Male' && (
+                    <Button
+                      onClick={() => setShowRedeemModal(true)}
+                      variant="outline"
+                      className="w-full flex items-center justify-center gap-2 rounded-full border-2 border-blue-400 text-blue-800 font-bold py-2 bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 shadow-sm transition-all duration-200 text-sm"
+                    >
+                      <Key className="w-4 h-4" />
+                      Redeem Sharing Code
+                    </Button>
+                  )}
+                </div>
+
+                {changePasswordMode && (
+                  <div className="space-y-4 border-t border-gray-200 pt-4 mt-4">
                     <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg bg-rose-100 flex items-center justify-center">
-                        <span className="text-rose-600 text-xs font-bold">🔗</span>
-                      </div>
-                      <h2 className="text-base font-bold text-gray-900">Period Tracker Sharing</h2>
+                      <span className="text-lg">🔐</span>
+                      <h3 className="text-base font-bold text-gray-900">Change Password</h3>
                     </div>
+
+                    {/* Current Password */}
+                    <div className="space-y-2">
+                      <Label htmlFor="currentPassword" className="text-xs font-semibold text-gray-700 flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-600"></span>
+                        Current Password
+                      </Label>
+                      <div className="relative">
+                        <Input
+                          id="currentPassword"
+                          type={showPassword ? "text" : "password"}
+                          value={passwordData.currentPassword}
+                          onChange={(e) =>
+                            setPasswordData({
+                              ...passwordData,
+                              currentPassword: e.target.value,
+                            })
+                          }
+                          placeholder="Enter current password"
+                          className="border-2 border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 rounded-lg h-10 pr-10 text-sm"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                        >
+                          {showPassword ? (
+                            <EyeOff className="w-4 h-4" />
+                          ) : (
+                            <Eye className="w-4 h-4" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* New Password */}
+                    <div className="space-y-2">
+                      <Label htmlFor="newPassword" className="text-xs font-semibold text-gray-700 flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-600"></span>
+                        New Password
+                      </Label>
+                      <div className="relative">
+                        <Input
+                          id="newPassword"
+                          type={showNewPassword ? "text" : "password"}
+                          value={passwordData.newPassword}
+                          onChange={(e) =>
+                            setPasswordData({
+                              ...passwordData,
+                              newPassword: e.target.value,
+                            })
+                          }
+                          placeholder="Enter new password"
+                          className="border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 rounded-lg h-10 pr-10 text-sm"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowNewPassword(!showNewPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                        >
+                          {showNewPassword ? (
+                            <EyeOff className="w-4 h-4" />
+                          ) : (
+                            <Eye className="w-4 h-4" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Confirm Password */}
+                    <div className="space-y-2">
+                      <Label htmlFor="confirmPassword" className="text-xs font-semibold text-gray-700 flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-600"></span>
+                        Confirm Password
+                      </Label>
+                      <div className="relative">
+                        <Input
+                          id="confirmPassword"
+                          type={showConfirmPassword ? "text" : "password"}
+                          value={passwordData.confirmPassword}
+                          onChange={(e) =>
+                            setPasswordData({
+                              ...passwordData,
+                              confirmPassword: e.target.value,
+                            })
+                          }
+                          placeholder="Confirm new password"
+                          className="border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 rounded-lg h-10 pr-10 text-sm"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                        >
+                          {showConfirmPassword ? (
+                            <EyeOff className="w-4 h-4" />
+                          ) : (
+                            <Eye className="w-4 h-4" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-2 pt-3 border-t border-gray-200">
+                      <Button
+                        onClick={handleChangePassword}
+                        disabled={isSaving}
+                        className="bg-red-600 hover:bg-red-700 text-white gap-1 rounded-lg h-10 flex-1 text-sm font-semibold"
+                      >
+                        <Save className="w-3 h-3" />
+                        {isSaving ? "Updating..." : "Update"}
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          setChangePasswordMode(false);
+                          setPasswordData({
+                            currentPassword: "",
+                            newPassword: "",
+                            confirmPassword: "",
+                          });
+                        }}
+                        variant="outline"
+                        className="gap-1 rounded-lg h-10 flex-1 border-2 border-gray-300 text-sm font-semibold"
+                      >
+                        <X className="w-3 h-3" />
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* PART 3: Period Tracker Section - Visible only for Female users */}
+            {profile.gender === 'Female' && (
+              <Card className="border-0 shadow-lg rounded-xl overflow-hidden">
+                <div className="bg-gradient-to-r from-pink-50 to-rose-50 border-b border-pink-100 px-3 sm:px-5 py-2 sm:py-3">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-pink-100 flex items-center justify-center">
+                      <span className="text-pink-600 text-xs font-bold">🗓️</span>
+                    </div>
+                    <h2 className="text-sm sm:text-base font-bold text-gray-900">Period Tracker</h2>
+                  </div>
+                </div>
+                <CardContent className="pt-4 pb-4">
+                  <div className="bg-gradient-to-br from-pink-50 to-rose-100/50 rounded-lg p-4 border border-pink-200/50">
+                    <h3 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                      <span role="img" aria-label="calendar">📅</span>
+                      Track Your Cycle
+                    </h3>
+                    <p className="text-xs text-gray-600 mb-4">Monitor and manage your menstrual cycle with detailed tracking and insights.</p>
+                    <Button
+                      onClick={() => navigate('/period-tracker')}
+                      className="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-medium py-2 rounded-lg text-sm"
+                    >
+                      Open Period Tracker
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* PART 4: Sharing Code Section - Visible only for Female users */}
+            {user?.gender === 'Female' && (
+              <Card className="border-0 shadow-lg rounded-xl overflow-hidden">
+                <div className="bg-gradient-to-r from-rose-50 to-pink-50 border-b border-rose-100 px-3 sm:px-5 py-2 sm:py-3">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-rose-100 flex items-center justify-center">
+                      <span className="text-rose-600 text-xs font-bold">🔗</span>
+                    </div>
+                    <h2 className="text-sm sm:text-base font-bold text-gray-900">Period Tracker Sharing</h2>
                   </div>
                 </div>
                 <CardContent className="pt-4 pb-3 space-y-4">
