@@ -166,18 +166,27 @@ export default async function handler(
     const { action } = req.query;
     const apiKey = process.env.GEMINI_API_KEY;
 
+    console.log('🔧 AI API called with action:', action);
+    console.log('🔑 API key configured:', apiKey ? `Yes (${apiKey.substring(0, 10)}...)` : 'NO - MISSING!');
+
     // Enhanced chat with semantic search and severity analysis
     if (action === 'chat') {
       const { message, context } = req.body;
       
+      console.log('💬 Chat request:', { message: message?.substring(0, 50), context: context?.substring(0, 50) });
+      
       if (!message) {
+        console.error('❌ No message provided');
         return res.status(400).json({ error: 'Message is required' });
       }
 
       if (!apiKey) {
+        console.error('❌ GEMINI_API_KEY not found in environment');
+        console.error('Available env keys:', Object.keys(process.env).filter(k => k.includes('GEMINI') || k.includes('API')));
         return res.status(500).json({ error: 'Gemini API key not configured' });
       }
 
+      console.log('✅ Initializing GoogleGenerativeAI...');
       const genAI = new GoogleGenerativeAI(apiKey);
       
       // Perform semantic search
@@ -210,6 +219,7 @@ Severity Score: ${(severityScore * 100).toFixed(1)}%
         }
       }
 
+      console.log('🔍 Starting semantic search...');
       const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
       const enhancedPrompt = `You are MediLingo, an advanced medical AI assistant. You provide accurate, helpful medical information while being empathetic and supportive.
@@ -238,9 +248,12 @@ User message: ${message}
 
 Respond as MediLingo with appropriate urgency level:`;
 
+      console.log('🤖 Calling Gemini API...');
       const result = await model.generateContent(enhancedPrompt);
       const response = result.response;
       const text = response.text();
+      
+      console.log('✅ Gemini API success, response length:', text.length);
 
       return res.json({
         ok: true,
@@ -377,7 +390,15 @@ Important: Only provide factual information from the prescription. Add general s
     return res.status(400).json({ error: 'Invalid action' });
 
   } catch (error) {
-    console.error('AI API error:', error);
+    console.error('❌ AI API error details:', error);
+    console.error('Error name:', error?.name);
+    console.error('Error message:', error?.message);
+    console.error('Error stack:', error?.stack);
+    
+    // Check if it's a Gemini API specific error
+    if (error?.message?.includes('API_KEY')) {
+      console.error('🔑 API KEY ERROR - The Gemini API key is invalid or expired');
+    }
     
     const { action } = req.query;
     const fallbackResponse = action === 'chat' 

@@ -348,6 +348,9 @@ const AdvancedChatbot = ({ prescriptionText }: { prescriptionText?: string }) =>
       // Try backend AI endpoint with Gemini
       try {
         console.log('🤖 Calling backend AI endpoint...');
+        console.log('API URL:', `${API_BASE_URL}/api/ai?action=chat`);
+        console.log('Request payload:', { message: userMessage, context: prescriptionText || `Medicines: ${medicines.length}` });
+        
         const resp = await fetch(`${API_BASE_URL}/api/ai?action=chat`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -358,21 +361,26 @@ const AdvancedChatbot = ({ prescriptionText }: { prescriptionText?: string }) =>
         });
 
         console.log('Backend AI response status:', resp.status);
+        const responseText = await resp.text();
+        console.log('Backend AI raw response:', responseText);
 
         if (!resp.ok) {
-          throw new Error('Backend AI request failed');
+          console.error('Backend AI error response:', responseText);
+          throw new Error(`Backend AI failed with status ${resp.status}: ${responseText}`);
         }
 
-        const data = await resp.json();
-        console.log('✅ Backend AI response:', data);
+        const data = JSON.parse(responseText);
+        console.log('✅ Backend AI parsed response:', data);
 
         if (data?.response) {
           addBotMessage(data.response);
         } else {
+          console.error('No response field in data:', data);
           throw new Error('Empty response from backend');
         }
       } catch (backendErr) {
-        console.warn('⚠️ Backend API failed, using local rules...', backendErr);
+        console.error('⚠️ Backend API error details:', backendErr);
+        console.warn('⚠️ Falling back to local rules...');
         
         // Final fallback to simple local rule-based response
         let response = '';
