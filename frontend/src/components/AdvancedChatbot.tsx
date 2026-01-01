@@ -345,57 +345,9 @@ const AdvancedChatbot = ({ prescriptionText }: { prescriptionText?: string }) =>
         return;
       }
 
-      // Use Gemini API directly from frontend (with browser API key)
+      // Try backend AI endpoint with Gemini
       try {
-        console.log('🤖 Calling Gemini API directly...');
-        const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-        
-        if (!apiKey) {
-          console.error('❌ VITE_GEMINI_API_KEY not configured');
-          throw new Error('API key not configured');
-        }
-
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
-        
-        const context = prescriptionText 
-          ? `Prescription context: ${prescriptionText}` 
-          : medicines.length > 0
-          ? `Patient medicines: ${medicines.map(m => `${m.name} ${m.dosage} ${m.timeOfDay}`).join(', ')}`
-          : '';
-
-        const systemPrompt = `You are a medical assistant helping users with medication questions. Be helpful but always recommend consulting healthcare providers for serious issues. Keep responses concise and clear.`;
-
-        const resp = await fetch(geminiUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{
-              parts: [{
-                text: `${systemPrompt}\n\nContext: ${context}\n\nUser question: ${userMessage}`
-              }]
-            }]
-          }),
-        });
-
-        console.log('Gemini API response status:', resp.status);
-
-        if (!resp.ok) {
-          const errorData = await resp.json().catch(() => ({}));
-          console.error('❌ Gemini API error:', errorData);
-          throw new Error(errorData?.error?.message || 'Gemini API request failed');
-        }
-
-        const data = await resp.json();
-        console.log('✅ Gemini response received:', data);
-
-        if (data?.candidates?.[0]?.content?.parts?.[0]?.text) {
-          const response = data.candidates[0].content.parts[0].text;
-          addBotMessage(response);
-        } else {
-          throw new Error('Invalid response structure from Gemini');
-        }
-      } catch (geminiErr) {
-        console.warn('⚠️ Gemini direct API failed, trying backend...', geminiErr);
+        console.log('🤖 Calling backend AI endpoint...');
         
         // Fallback to backend API
         try {

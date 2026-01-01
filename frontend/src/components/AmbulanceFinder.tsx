@@ -77,10 +77,9 @@ const AmbulanceFinder = () => {
     mapPoint.lng + bboxSize,
     mapPoint.lat + bboxSize,
   ].join("%2C");
-  // Show user's accepted location directly when available; otherwise keep the ambulance search area
-  const mapUrl = hasLiveLocation
-    ? `https://www.google.com/maps?q=${mapPoint.lat},${mapPoint.lng}&z=15&output=embed`
-    : `https://www.google.com/maps?q=${encodeURIComponent(`ambulance near ${mapPoint.lat},${mapPoint.lng}`)}&z=14&output=embed`;
+  
+  // Always show user location pin on map
+  const mapUrl = `https://www.google.com/maps?q=${mapPoint.lat},${mapPoint.lng}&z=15&output=embed`;
 
   const mapsNavUrl = hasLiveLocation
     ? `https://www.google.com/maps/search/?api=1&query=${mapPoint.lat},${mapPoint.lng}`
