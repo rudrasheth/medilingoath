@@ -348,65 +348,60 @@ const AdvancedChatbot = ({ prescriptionText }: { prescriptionText?: string }) =>
       // Try backend AI endpoint with Gemini
       try {
         console.log('🤖 Calling backend AI endpoint...');
-        
-        // Fallback to backend API
-        try {
-          console.log('📋 Calling backend AI endpoint...');
-          const resp = await fetch(`${API_BASE_URL}/api/ai?action=chat`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              message: userMessage,
-              context: prescriptionText ? `Prescription: ${prescriptionText}` : `Medicines: ${medicines.map(m => `${m.name} ${m.dosage}`).join(', ')}`
-            }),
-          });
+        const resp = await fetch(`${API_BASE_URL}/api/ai?action=chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: userMessage,
+            context: prescriptionText ? `Prescription: ${prescriptionText}` : `Medicines: ${medicines.map(m => `${m.name} ${m.dosage}`).join(', ')}`
+          }),
+        });
 
-          console.log('Backend AI response status:', resp.status);
+        console.log('Backend AI response status:', resp.status);
 
-          if (!resp.ok) {
-            throw new Error('Backend AI request failed');
-          }
-
-          const data = await resp.json();
-          console.log('✅ Backend AI response:', data);
-
-          if (data?.response) {
-            addBotMessage(data.response);
-          } else {
-            throw new Error('Empty response from backend');
-          }
-        } catch (backendErr) {
-          console.warn('⚠️ Backend API failed, using local rules...', backendErr);
-          
-          // Final fallback to simple local rule-based response
-          let response = '';
-          const medicineNames = medicines.map(m => m.name.toLowerCase());
-          const mentionedMedicine = medicineNames.find(name => lowerMessage.includes(name));
-          
-          if (mentionedMedicine) {
-            const medicine = medicines.find(m => m.name.toLowerCase() === mentionedMedicine);
-            if (medicine) {
-              if (lowerMessage.includes('when') || lowerMessage.includes('time')) {
-                response = `Based on your history, ${medicine.name} is typically taken at ${medicine.timeOfDay}. Maintain consistency for best results.`;
-              } else if (lowerMessage.includes('dose') || lowerMessage.includes('how much')) {
-                response = `Your usual dose for ${medicine.name} is ${medicine.dosage}. Do not adjust without consulting your doctor.`;
-              } else if (lowerMessage.includes('side effect')) {
-                response = `For any side effects from ${medicine.name}, please consult your healthcare provider immediately.`;
-              } else {
-                response = `${medicine.name} - ${medicine.dosage}. ${medicine.instructions || 'Take as prescribed.'}`;
-              }
-            }
-          } else if (lowerMessage.includes('miss') || lowerMessage.includes('forgot')) {
-            response = 'If you missed a dose, take it as soon as you remember unless it\'s close to your next scheduled dose. Never double up. Consult your pharmacist for specific guidance.';
-          } else if (lowerMessage.includes('schedule') || lowerMessage.includes('routine')) {
-            response = `Your current routine includes ${medicines.length} medicine(s). Consistency is key - take them at the same times daily.`;
-          } else if (lowerMessage.includes('side effect') || lowerMessage.includes('reaction')) {
-            response = 'If you experience any unusual symptoms or side effects, contact your healthcare provider immediately. Don\'t stop medications without medical advice.';
-          } else {
-            response = `I'm here to help with medication questions! Ask me about dosages, schedules, side effects, or interactions. For medical emergencies, call 911 or your local emergency number.`;
-          }
-          addBotMessage(response);
+        if (!resp.ok) {
+          throw new Error('Backend AI request failed');
         }
+
+        const data = await resp.json();
+        console.log('✅ Backend AI response:', data);
+
+        if (data?.response) {
+          addBotMessage(data.response);
+        } else {
+          throw new Error('Empty response from backend');
+        }
+      } catch (backendErr) {
+        console.warn('⚠️ Backend API failed, using local rules...', backendErr);
+        
+        // Final fallback to simple local rule-based response
+        let response = '';
+        const medicineNames = medicines.map(m => m.name.toLowerCase());
+        const mentionedMedicine = medicineNames.find(name => lowerMessage.includes(name));
+        
+        if (mentionedMedicine) {
+          const medicine = medicines.find(m => m.name.toLowerCase() === mentionedMedicine);
+          if (medicine) {
+            if (lowerMessage.includes('when') || lowerMessage.includes('time')) {
+              response = `Based on your history, ${medicine.name} is typically taken at ${medicine.timeOfDay}. Maintain consistency for best results.`;
+            } else if (lowerMessage.includes('dose') || lowerMessage.includes('how much')) {
+              response = `Your usual dose for ${medicine.name} is ${medicine.dosage}. Do not adjust without consulting your doctor.`;
+            } else if (lowerMessage.includes('side effect')) {
+              response = `For any side effects from ${medicine.name}, please consult your healthcare provider immediately.`;
+            } else {
+              response = `${medicine.name} - ${medicine.dosage}. ${medicine.instructions || 'Take as prescribed.'}`;
+            }
+          }
+        } else if (lowerMessage.includes('miss') || lowerMessage.includes('forgot')) {
+          response = 'If you missed a dose, take it as soon as you remember unless it\'s close to your next scheduled dose. Never double up. Consult your pharmacist for specific guidance.';
+        } else if (lowerMessage.includes('schedule') || lowerMessage.includes('routine')) {
+          response = `Your current routine includes ${medicines.length} medicine(s). Consistency is key - take them at the same times daily.`;
+        } else if (lowerMessage.includes('side effect') || lowerMessage.includes('reaction')) {
+          response = 'If you experience any unusual symptoms or side effects, contact your healthcare provider immediately. Don\'t stop medications without medical advice.';
+        } else {
+          response = `I'm here to help with medication questions! Ask me about dosages, schedules, side effects, or interactions. For medical emergencies, call 911 or your local emergency number.`;
+        }
+        addBotMessage(response);
       }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Failed to get response';
