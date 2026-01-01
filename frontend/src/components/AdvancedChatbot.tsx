@@ -344,8 +344,10 @@ const AdvancedChatbot = ({ prescriptionText }: { prescriptionText?: string }) =>
         setLoading(false);
         return;
       }
-      // Prefer enhanced AI chatbot with medical database
+
+      // Try enhanced AI chatbot with medical database first
       try {
+        console.log('🤖 Calling Gemini API via backend...');
         const resp = await fetch(`${API_BASE_URL}/api/ai?action=chat`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -355,15 +357,20 @@ const AdvancedChatbot = ({ prescriptionText }: { prescriptionText?: string }) =>
           }),
         });
 
+        console.log('Backend AI response status:', resp.status);
+
         if (!resp.ok) {
-          throw new Error('AI chat service unavailable');
+          const errorData = await resp.json().catch(() => ({}));
+          console.error('Backend AI error:', errorData);
+          throw new Error(errorData?.error || 'AI chat service returned an error');
         }
         
         const data = await resp.json();
+        console.log('Backend AI response:', data);
+
         if (data?.response) {
           addBotMessage(data.response);
           
-          // Show severity score and emergency alerts if available
           if (data.severityScore > 0) {
             const severityPercent = (data.severityScore * 100).toFixed(1);
             addBotMessage(`⚠️ Severity Assessment: ${severityPercent}%`);
@@ -377,11 +384,14 @@ const AdvancedChatbot = ({ prescriptionText }: { prescriptionText?: string }) =>
             addBotMessage(`📋 Medical Database Match:\n• Condition: ${data.medicalMatch.condition}\n• Recommended: ${data.medicalMatch.medicines}\n• Advice: ${data.medicalMatch.advice}`);
           }
         } else {
-          throw new Error('Empty AI response');
+          throw new Error('Empty AI response from backend');
         }
       } catch (aiErr) {
+        console.warn('⚠️ Backend AI failed, trying fallback...', aiErr);
+        
         // Fallback to backend prescription chat
         try {
+          console.log('📋 Calling prescription chat endpoint...');
           const resp = await fetch(`${API_BASE_URL}/api/prescriptions/chat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -392,21 +402,29 @@ const AdvancedChatbot = ({ prescriptionText }: { prescriptionText?: string }) =>
             }),
           });
 
+          console.log('Prescription chat response status:', resp.status);
+
           if (!resp.ok) {
             const errData = await resp.json().catch(() => ({}));
+            console.error('Prescription chat error:', errData);
             throw new Error(errData?.error || errData?.message || 'Chat request failed');
           }
           const data = await resp.json();
+          console.log('Prescription chat response:', data);
+          
           if (data?.reply) {
             addBotMessage(data.reply);
           } else {
-            throw new Error('Empty chatbot response');
+            throw new Error('Empty prescription chat response');
           }
-        } catch (apiErr) {
+        } catch (prescErr) {
+          console.warn('⚠️ Prescription chat failed, using local rules...', prescErr);
+          
           // Final fallback to simple local rule-based response
           let response = '';
           const medicineNames = medicines.map(m => m.name.toLowerCase());
           const mentionedMedicine = medicineNames.find(name => lowerMessage.includes(name));
+          
           if (mentionedMedicine) {
             const medicine = medicines.find(m => m.name.toLowerCase() === mentionedMedicine);
             if (medicine) {
@@ -427,16 +445,16 @@ const AdvancedChatbot = ({ prescriptionText }: { prescriptionText?: string }) =>
           } else if (lowerMessage.includes('side effect') || lowerMessage.includes('reaction')) {
             response = 'If you experience any unusual symptoms or side effects, contact your healthcare provider immediately. Don\'t stop medications without medical advice.';
           } else {
-            response = `Based on your history with ${medicines.length} medicine(s), maintain your current schedule. For specific medical advice, please consult your healthcare provider.`;
+            response = `I'm here to help! You have ${medicines.length > 0 ? medicines.length + ' medicine(s)' : 'no medicines'} in your profile. Ask me about dosages, schedules, interactions, or side effects. For medical emergencies, call 911 or your local emergency number.`;
           }
           addBotMessage(response);
         }
       }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Failed to get response';
+      console.error('Final error:', errorMsg);
       setError(errorMsg);
-      addBotMessage(`Sorry, I encountered an error: ${errorMsg}`);
-      console.error(err);
+      addBotMessage(`Sorry, I encountered an error: ${errorMsg}. Please try again or contact support if the issue persists.`);
     } finally {
       setLoading(false);
     }
