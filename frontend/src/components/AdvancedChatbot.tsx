@@ -345,80 +345,86 @@ const AdvancedChatbot = ({ prescriptionText }: { prescriptionText?: string }) =>
         return;
       }
 
-      // Try enhanced AI chatbot with medical database first
+      // Use Gemini API directly from frontend (with browser API key)
       try {
-        console.log('🤖 Calling Gemini API via backend...');
-        const resp = await fetch(`${API_BASE_URL}/api/ai?action=chat`, {
+        console.log('🤖 Calling Gemini API directly...');
+        const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+        
+        if (!apiKey) {
+          console.error('❌ VITE_GEMINI_API_KEY not configured');
+          throw new Error('API key not configured');
+        }
+
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
+        
+        const context = prescriptionText 
+          ? `Prescription context: ${prescriptionText}` 
+          : medicines.length > 0
+          ? `Patient medicines: ${medicines.map(m => `${m.name} ${m.dosage} ${m.timeOfDay}`).join(', ')}`
+          : '';
+
+        const systemPrompt = `You are a medical assistant helping users with medication questions. Be helpful but always recommend consulting healthcare providers for serious issues. Keep responses concise and clear.`;
+
+        const resp = await fetch(geminiUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            message: userMessage,
-            context: prescriptionText ? `Prescription: ${prescriptionText}` : `Medicines: ${medicines.map(m => `${m.name} ${m.dosage}`).join(', ')}`
+            contents: [{
+              parts: [{
+                text: `${systemPrompt}\n\nContext: ${context}\n\nUser question: ${userMessage}`
+              }]
+            }]
           }),
         });
 
-        console.log('Backend AI response status:', resp.status);
+        console.log('Gemini API response status:', resp.status);
 
         if (!resp.ok) {
           const errorData = await resp.json().catch(() => ({}));
-          console.error('Backend AI error:', errorData);
-          throw new Error(errorData?.error || 'AI chat service returned an error');
+          console.error('❌ Gemini API error:', errorData);
+          throw new Error(errorData?.error?.message || 'Gemini API request failed');
         }
-        
-        const data = await resp.json();
-        console.log('Backend AI response:', data);
 
-        if (data?.response) {
-          addBotMessage(data.response);
-          
-          if (data.severityScore > 0) {
-            const severityPercent = (data.severityScore * 100).toFixed(1);
-            addBotMessage(`⚠️ Severity Assessment: ${severityPercent}%`);
-          }
-          
-          if (data.isEmergency) {
-            addBotMessage(`🚨 EMERGENCY DETECTED! Please seek immediate medical attention or call emergency services.`);
-          }
-          
-          if (data.medicalMatch) {
-            addBotMessage(`📋 Medical Database Match:\n• Condition: ${data.medicalMatch.condition}\n• Recommended: ${data.medicalMatch.medicines}\n• Advice: ${data.medicalMatch.advice}`);
-          }
+        const data = await resp.json();
+        console.log('✅ Gemini response received:', data);
+
+        if (data?.candidates?.[0]?.content?.parts?.[0]?.text) {
+          const response = data.candidates[0].content.parts[0].text;
+          addBotMessage(response);
         } else {
-          throw new Error('Empty AI response from backend');
+          throw new Error('Invalid response structure from Gemini');
         }
-      } catch (aiErr) {
-        console.warn('⚠️ Backend AI failed, trying fallback...', aiErr);
+      } catch (geminiErr) {
+        console.warn('⚠️ Gemini direct API failed, trying backend...', geminiErr);
         
-        // Fallback to backend prescription chat
+        // Fallback to backend API
         try {
-          console.log('📋 Calling prescription chat endpoint...');
-          const resp = await fetch(`${API_BASE_URL}/api/prescriptions/chat`, {
+          console.log('📋 Calling backend AI endpoint...');
+          const resp = await fetch(`${API_BASE_URL}/api/ai?action=chat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
             body: JSON.stringify({
-              userId: user?.id,
-              userMessage,
+              message: userMessage,
+              context: prescriptionText ? `Prescription: ${prescriptionText}` : `Medicines: ${medicines.map(m => `${m.name} ${m.dosage}`).join(', ')}`
             }),
           });
 
-          console.log('Prescription chat response status:', resp.status);
+          console.log('Backend AI response status:', resp.status);
 
           if (!resp.ok) {
-            const errData = await resp.json().catch(() => ({}));
-            console.error('Prescription chat error:', errData);
-            throw new Error(errData?.error || errData?.message || 'Chat request failed');
+            throw new Error('Backend AI request failed');
           }
+
           const data = await resp.json();
-          console.log('Prescription chat response:', data);
-          
-          if (data?.reply) {
-            addBotMessage(data.reply);
+          console.log('✅ Backend AI response:', data);
+
+          if (data?.response) {
+            addBotMessage(data.response);
           } else {
-            throw new Error('Empty prescription chat response');
+            throw new Error('Empty response from backend');
           }
-        } catch (prescErr) {
-          console.warn('⚠️ Prescription chat failed, using local rules...', prescErr);
+        } catch (backendErr) {
+          console.warn('⚠️ Backend API failed, using local rules...', backendErr);
           
           // Final fallback to simple local rule-based response
           let response = '';
@@ -445,7 +451,7 @@ const AdvancedChatbot = ({ prescriptionText }: { prescriptionText?: string }) =>
           } else if (lowerMessage.includes('side effect') || lowerMessage.includes('reaction')) {
             response = 'If you experience any unusual symptoms or side effects, contact your healthcare provider immediately. Don\'t stop medications without medical advice.';
           } else {
-            response = `I'm here to help! You have ${medicines.length > 0 ? medicines.length + ' medicine(s)' : 'no medicines'} in your profile. Ask me about dosages, schedules, interactions, or side effects. For medical emergencies, call 911 or your local emergency number.`;
+            response = `I'm here to help with medication questions! Ask me about dosages, schedules, side effects, or interactions. For medical emergencies, call 911 or your local emergency number.`;
           }
           addBotMessage(response);
         }

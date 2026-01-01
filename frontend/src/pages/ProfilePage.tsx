@@ -409,12 +409,12 @@ const ProfilePage = () => {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 flex flex-col">
         <GlassNav />
 
-        <div className="flex-1 flex items-center justify-center px-2 py-4 sm:px-4 sm:py-6">
-          <div className="w-full max-w-sm sm:max-w-md">
+        <div className="flex-1 flex items-start justify-center px-4 py-6 sm:px-6 sm:py-8 overflow-auto">
+          <div className="w-full max-w-7xl">
             
-            <div className="space-y-2 sm:space-y-3">
-            {/* Profile Header Card */}
-            <div className="bg-gradient-to-r from-teal-500 to-teal-600 rounded-xl shadow-lg p-3 sm:p-4 text-white relative overflow-hidden">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Profile Header Card - Full Width */}
+            <div className="col-span-1 md:col-span-2 lg:col-span-4 bg-gradient-to-r from-teal-500 to-teal-600 rounded-xl shadow-lg p-3 sm:p-4 text-white relative overflow-hidden">
               {/* Back Button - Top Left */}
               <button
                 onClick={() => navigate("/")}

@@ -31,38 +31,60 @@ const BookAppointment = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.phone || !formData.date || !formData.time || !formData.specialty) {
+    if (!formData.name || !formData.phone || !formData.date || !formData.time || !formData.specialty || !email) {
       toast({
         title: "Missing information",
-        description: "Please fill all required fields",
+        description: "Please fill all required fields including email",
         variant: "destructive"
       });
       return;
     }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast({
+        title: "Invalid email",
+        description: "Please enter a valid email address",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
-      const res = await fetch("/api/appointment/book", {
+      const API_BASE_URL = 'https://medilingoath.vercel.app';
+      const res = await fetch(`${API_BASE_URL}/api/appointment/book`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...formData, email }),
       });
+      
+      console.log('Appointment booking response status:', res.status);
+      
       if (!res.ok) {
-        const errText = await res.text();
+        const errData = await res.json().catch(() => ({ message: 'Unknown error' }));
+        console.error('Appointment error:', errData);
         toast({
           title: "Error",
-          description: `Failed to book appointment: ${errText}`,
+          description: errData.message || 'Failed to book appointment',
           variant: "destructive"
         });
-        throw new Error(errText);
+        throw new Error(errData.message || 'Booking failed');
       }
+      
+      const data = await res.json();
+      console.log('Appointment success:', data);
+      
       setSubmitted(true);
       toast({
         title: "Appointment requested",
-        description: "Confirmation email sent! We'll confirm your appointment shortly.",
+        description: "Confirmation email sent to " + email + "! We'll confirm your appointment shortly.",
       });
     } catch (err) {
+      console.error('Appointment booking error:', err);
       toast({
         title: "Error",
-        description: "Could not book appointment. Please try again.",
+        description: "Could not book appointment. Please try again or contact support.",
         variant: "destructive"
       });
     }
