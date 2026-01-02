@@ -304,6 +304,15 @@ const GlassNav = () => {
               <Button
                 variant="outline"
                 size="sm"
+                onClick={() => navigate('/patient')}
+                className="gap-2"
+              >
+                <User className="w-4 h-4" />
+                Patient Portal
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => navigate('/profile')}
                 className="gap-2"
               >
