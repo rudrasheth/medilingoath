@@ -14,15 +14,19 @@ const PatientPage = () => {
   const { view } = useParams<{ view?: PatientView }>();
   const currentView = (view as PatientView) || "dashboard";
 
+  /*
   useEffect(() => {
     if (!isAuthenticated) {
       navigate("/");
     }
   }, [isAuthenticated, navigate]);
+  */
 
+  /*
   if (!isAuthenticated) {
     return null;
   }
+  */
 
   return (
     <>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { API_BASE_URL } from "@/lib/config";
 import {
   Dialog,
   DialogContent,
@@ -56,7 +57,7 @@ const BookAppointmentPatient = ({ onSuccess }: BookAppointmentPatientProps) => {
 
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/patient/appointments`,
+        `${API_BASE_URL}/api/patient/appointments`,
         {
           method: "POST",
           headers: {

@@ -39,7 +39,7 @@ const GlassNav = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isSignupMode, setIsSignupMode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  
+
   // Forgot password states
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
   const [forgotPasswordStep, setForgotPasswordStep] = useState<"email" | "otp" | "reset">("email");
@@ -65,23 +65,23 @@ const GlassNav = () => {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validation
     if (!firstName.trim() || !lastName.trim()) {
       alert("Please enter your full name");
       return;
     }
-    
+
     if (!age || parseInt(age) < 1 || parseInt(age) > 150) {
       alert("Please enter a valid age (1-150)");
       return;
     }
-    
+
     if (password !== confirmPassword) {
       alert("Passwords don't match!");
       return;
     }
-    
+
     if (password.length < 6) {
       alert("Password must be at least 6 characters");
       return;
@@ -127,7 +127,7 @@ const GlassNav = () => {
 
   const handleForgotPasswordRequest = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!forgotPasswordEmail.trim()) {
       alert("Please enter your email address");
       return;
@@ -207,7 +207,7 @@ const GlassNav = () => {
 
   const handlePayment = async (target: "premium" | "pro") => {
     setProcessingPayment(true);
-    
+
     // DEMO MODE - Simulate payment without Razorpay
     if (DEMO_MODE) {
       setTimeout(() => {
@@ -226,14 +226,14 @@ const GlassNav = () => {
     // 3. Backend verifies signature with secret key (NEVER expose in frontend code)
     // 4. Backend updates database with new plan
     // Currently in frontend for development only - move to server/routes before deploying!
-    
+
     // PRODUCTION MODE - Real Razorpay payment
     try {
       const amount = target === "premium" ? 299 : 599;
-      
+
       // Get Razorpay key from environment or use fallback
       const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_RtYUA2drSIhQYW";
-      
+
       // Load Razorpay script
       const script = document.createElement("script");
       script.src = "https://checkout.razorpay.com/v1/checkout.js";
@@ -298,27 +298,29 @@ const GlassNav = () => {
           {/* Language Switcher */}
           <LanguageSwitcher />
 
+          {/* Patient Portal & Profile - Always visible */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate('/patient')}
+            className="gap-2"
+          >
+            <User className="w-4 h-4" />
+            Patient Portal
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate('/profile')}
+            className="gap-2"
+          >
+            <User className="w-4 h-4" />
+            Profile
+          </Button>
+
           {/* Login/Logout Button */}
           {isAuthenticated ? (
             <>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate('/patient')}
-                className="gap-2"
-              >
-                <User className="w-4 h-4" />
-                Patient Portal
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate('/profile')}
-                className="gap-2"
-              >
-                <User className="w-4 h-4" />
-                Profile
-              </Button>
               <Button
                 variant="outline"
                 size="sm"
@@ -661,8 +663,8 @@ const GlassNav = () => {
                       Current Plan
                     </Button>
                   ) : (
-                    <Button 
-                      onClick={() => handlePayment("premium")} 
+                    <Button
+                      onClick={() => handlePayment("premium")}
                       disabled={processingPayment}
                       className="w-full py-3 bg-green-600 hover:bg-green-800 text-white text-sm font-semibold transition-colors"
                     >
@@ -691,10 +693,10 @@ const GlassNav = () => {
                       Current Plan
                     </Button>
                   ) : (
-                    <Button 
-                      onClick={() => handlePayment("pro")} 
+                    <Button
+                      onClick={() => handlePayment("pro")}
                       disabled={processingPayment}
-                      variant="outline" 
+                      variant="outline"
                       className="w-full py-3 border-2 border-green-600 text-green-600 hover:bg-green-700 hover:text-white hover:border-green-700 text-sm font-semibold transition-colors"
                     >
                       {processingPayment ? "Processing..." : "Upgrade to Pro"}

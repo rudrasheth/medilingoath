@@ -57,6 +57,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ email, password }),
       });
 
@@ -109,6 +110,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ email, password, age, name, gender }),
       });
 
@@ -232,11 +234,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const checkAuthStatus = () => {
-    const token = localStorage.getItem('medilingo_token');
     const savedUser = localStorage.getItem('medilingo_user');
     
-    if (!token || !savedUser) {
-      console.warn('⚠️ Missing token or user data - forcing logout');
+    if (!savedUser) {
+      console.warn('⚠️ Missing user data - forcing logout');
       setUser(null);
       localStorage.removeItem('medilingo_token');
       localStorage.removeItem('medilingo_user');

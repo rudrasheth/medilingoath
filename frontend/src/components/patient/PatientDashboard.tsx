@@ -2,6 +2,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { API_BASE_URL } from "@/lib/config";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, FileText, Heart, Clock, User, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -24,7 +25,7 @@ const PatientDashboard = () => {
   const fetchPatientData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/patient/data`, {
+      const response = await fetch(`${API_BASE_URL}/api/patient/data`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("medilingo_token")}`,
         },

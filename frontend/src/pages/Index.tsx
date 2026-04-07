@@ -34,6 +34,8 @@ const IndexContent = () => {
   }, [currentView]);
 
   // Prevent unauthenticated users from staying on chatbot view
+  // Prevent unauthenticated users from staying on chatbot view
+  /*
   useEffect(() => {
     if (currentView === "prescription-chatbot" && !isAuthenticated) {
       toast({
@@ -44,6 +46,7 @@ const IndexContent = () => {
       setCurrentView("landing");
     }
   }, [currentView, isAuthenticated]);
+  */
 
   const handleScanClick = () => {
     if (!canUseScan()) {
@@ -61,6 +64,8 @@ const IndexContent = () => {
     }
 
     // Block chatbot access for logged-out users
+    // Block chatbot access for logged-out users
+    /*
     if (!isAuthenticated) {
       toast({
         title: "Login required",
@@ -71,6 +76,7 @@ const IndexContent = () => {
       setCurrentView("landing");
       return;
     }
+    */
     
     // Check for manually entered text
     const manualText = sessionStorage.getItem('manualPrescriptionText');
@@ -139,6 +145,8 @@ const IndexContent = () => {
       setIsProcessing(false);
 
       // Only allow chatbot view if logged in
+      // Only allow chatbot view if logged in
+      /*
       if (isAuthenticated) {
         setCurrentView("prescription-chatbot");
       } else {
@@ -149,6 +157,8 @@ const IndexContent = () => {
         });
         setCurrentView("landing");
       }
+      */
+      setCurrentView("prescription-chatbot");
     } catch (e) {
       setIsProcessing(false);
       toast({ title: "Upload failed", description: "Please try again.", variant: "destructive" });

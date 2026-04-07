@@ -1,7 +1,9 @@
 // API Configuration
-const isDevelopment = false; // Force production mode
+const isDevelopment = true; // Set to true for local development
 
-export const API_BASE_URL = 'https://medilingoath.vercel.app';
+export const API_BASE_URL = isDevelopment 
+  ? 'http://localhost:3000'
+  : 'https://medilingoath.vercel.app';
 
 console.log('🔧 Config loaded - isDevelopment:', isDevelopment);
 console.log('🔧 Config loaded - API_BASE_URL:', API_BASE_URL);

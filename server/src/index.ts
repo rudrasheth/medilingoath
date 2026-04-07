@@ -13,6 +13,7 @@ import appointmentRoutes from './routes/appointmentRoutes';
 import doctorRoutes from './routes/doctorRoutes';
 import shareRoutes from './routes/shareRoutes';
 import cycleRoutes from './routes/cycleRoutes';
+import patientRoutes from './routes/patientRoutes';
 import { SESSION_SECRET, NODE_ENV, FRONTEND_URL, PORT } from './config/env';
 
 // Initialize configuration
@@ -33,6 +34,9 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Important for proxy setups (like Heroku or Render) when secure cookies are needed
+app.set('trust proxy', 1);
+
 // Middleware - Sessions
 app.use(session({
   secret: SESSION_SECRET!,
@@ -41,7 +45,7 @@ app.use(session({
   cookie: {
     secure: NODE_ENV === 'production', // HTTPS only in production
     httpOnly: true, // Prevent JavaScript from accessing the cookie
-    sameSite: 'lax', // allow cross-site POSTs from frontend dev server
+    sameSite: NODE_ENV === 'production' ? 'none' : 'lax', // allow cross-site POSTs
     maxAge: 1000 * 60 * 60 * 24, // 24 hours
   },
   name: 'medilingo_session', // Custom session cookie name
@@ -57,6 +61,7 @@ app.use('/api/appointment', appointmentRoutes);
 app.use('/api/doctor', doctorRoutes);
 app.use('/api/share', shareRoutes);
 app.use('/api/cycle', cycleRoutes);
+app.use('/api/patient', patientRoutes);
 
 // Basic Health Check Route
 app.get('/', (req: Request, res: Response) => {

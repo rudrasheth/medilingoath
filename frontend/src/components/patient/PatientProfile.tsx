@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { API_BASE_URL } from "@/lib/config";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -62,7 +63,7 @@ const PatientProfile = () => {
   const fetchProfile = async () => {
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/patient/profile`,
+        `${API_BASE_URL}/api/patient/profile`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("medilingo_token")}`,
@@ -83,7 +84,7 @@ const PatientProfile = () => {
     setLoading(true);
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/patient/profile`,
+        `${API_BASE_URL}/api/patient/profile`,
         {
           method: "PUT",
           headers: {
