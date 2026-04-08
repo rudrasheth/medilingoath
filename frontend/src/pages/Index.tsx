@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet";
+import { API_BASE_URL } from "@/lib/config";
 import GlassNav from "@/components/layout/GlassNav";
 import HeroSection from "@/components/landing/HeroSection";
 import DashboardView from "@/components/dashboard/DashboardView";
@@ -131,7 +132,7 @@ const IndexContent = () => {
             localStorage.setItem('medilingo_user_id', gen);
             return gen;
           })();
-          await fetch('http://localhost:4000/api/history', {
+          await fetch(`${API_BASE_URL}/api/history`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userId: uid, imageUrl: prescriptionImage, text }),

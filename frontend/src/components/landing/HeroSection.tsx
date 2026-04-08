@@ -1,5 +1,6 @@
 import { Camera, Sparkles, MessageCircle, Upload, Video, MapPin, Building2, Ambulance, Droplets, Pill, CalendarCheck, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { API_BASE_URL } from "@/lib/config";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useEffect, useState } from "react";
 import PrescriptionCard from "./PrescriptionCard";
@@ -82,7 +83,7 @@ const HeroSection = ({ onScanClick, onFileSelected }: HeroSectionProps) => {
     const loadSharedProfiles = async () => {
       if (user?.gender !== 'Male') return;
       try {
-        const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5001';
+        // Uses global API_BASE_URL
         const resp = await fetch(`${API_BASE_URL}/api/share/profiles`, { credentials: 'include' });
         if (resp.ok) {
           const data = await resp.json();
@@ -101,7 +102,7 @@ const HeroSection = ({ onScanClick, onFileSelected }: HeroSectionProps) => {
       if (!selectedSharedProfile) { setSharedData(null); return; }
       setSharedLoading(true);
       try {
-        const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5001';
+        // Uses global API_BASE_URL
         const resp = await fetch(`${API_BASE_URL}/api/cycle/shared/${selectedSharedProfile.id}`, { credentials: 'include' });
         if (resp.ok) {
           const data = await resp.json();
@@ -135,7 +136,7 @@ const HeroSection = ({ onScanClick, onFileSelected }: HeroSectionProps) => {
     });
     // Persist to backend so shared viewers can see data
     try {
-      const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5001';
+      // Uses global API_BASE_URL
       await fetch(`${API_BASE_URL}/api/cycle/me`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -506,7 +507,7 @@ const HeroSection = ({ onScanClick, onFileSelected }: HeroSectionProps) => {
               onClick={async () => {
                 setRedeeming(true);
                 try {
-                  const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5001';
+                  // Uses global API_BASE_URL
                   const resp = await fetch(`${API_BASE_URL}/api/share/access`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },

@@ -15,6 +15,7 @@ import { generateMultilingualReport } from "@/lib/report";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { API_BASE_URL } from "@/lib/config";
 
 interface DashboardViewProps {
   onBack: () => void;
@@ -145,7 +146,7 @@ const DashboardView = ({ onBack, prescriptionImage, decipherText }: DashboardVie
     if (!phone) return;
     try {
       const msg = 'Missed dose detected. Please check in with the patient.';
-      const r = await fetch('http://localhost:4000/api/caregiver-alert', {
+      const r = await fetch(`${API_BASE_URL}/api/caregiver-alert`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone, message: msg }),

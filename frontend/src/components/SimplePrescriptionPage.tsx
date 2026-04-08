@@ -11,6 +11,7 @@ import { whatsappService } from '@/lib/whatsappService';
 import { reminderService } from '@/lib/reminderService';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { API_BASE_URL } from '@/lib/config';
 
 interface SimplePrescriptionPageProps {
   onBack: () => void;
@@ -22,7 +23,7 @@ const SimplePrescriptionPage = ({ onBack, prescriptionText, prescriptionImage }:
   const { addMedicines, medicines } = useMedicineHistory();
   const { user } = useAuth();
   const { language, t } = useLanguage();
-  const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5001';
+  // API_BASE_URL is imported from config
 
   const [extractedText] = useState<string | null>(prescriptionText || null);
   const [showReminderDialog, setShowReminderDialog] = useState(false);

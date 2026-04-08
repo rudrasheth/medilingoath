@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Download } from 'lucide-react';
+import { API_BASE_URL } from '@/lib/config';
 import { Button } from '@/components/ui/button';
 import PhotoUpload from '@/components/upload/PhotoUpload';
 import AdvancedChatbot from '@/components/AdvancedChatbot';
@@ -18,7 +19,7 @@ interface PrescriptionChatbotPageProps {
 const PrescriptionChatbotPage = ({ onBack }: PrescriptionChatbotPageProps) => {
   const { t, language } = useLanguage();
   const { user } = useAuth();
-  const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5001';
+  // Uses global API_BASE_URL
   const { addMedicines } = useMedicineHistory();
 
   // Debug: Log current user state

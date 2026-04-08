@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { API_BASE_URL } from "@/lib/config";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -60,7 +61,7 @@ const ProfileDialog = ({ open, onOpenChange }: ProfileDialogProps) => {
     const refreshProfile = async () => {
       if (!isAuthenticated || !open) return;
       try {
-        const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || "http://localhost:5001";
+        // Uses global API_BASE_URL
         const resp = await fetch(`${API_BASE_URL}/api/auth/profile`, {
           method: "GET",
           credentials: "include",
@@ -132,7 +133,7 @@ const ProfileDialog = ({ open, onOpenChange }: ProfileDialogProps) => {
 
     setIsSaving(true);
     try {
-      const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || "http://localhost:5001";
+      // Uses global API_BASE_URL
       const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
         method: "PUT",
         headers: {
@@ -203,7 +204,7 @@ const ProfileDialog = ({ open, onOpenChange }: ProfileDialogProps) => {
 
     setIsSaving(true);
     try {
-      const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || "http://localhost:5001";
+      // Uses global API_BASE_URL
       const response = await fetch(`${API_BASE_URL}/api/auth/change-password`, {
         method: "POST",
         headers: {

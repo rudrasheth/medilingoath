@@ -7,7 +7,7 @@ import fetch from 'node-fetch';
 dotenv.config();
 
 const app = express();
-app.use(cors({ origin: '*'}));
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 
 const PORT = process.env.PORT || 4000;

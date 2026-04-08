@@ -5,6 +5,7 @@ import ChatInput from './ChatInput';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+import { API_BASE_URL } from '@/lib/config';
 
 interface ChatbotProps {
   isOpen: boolean;
@@ -64,7 +65,7 @@ const getMedicationResponse = (input: string): string => {
 
 const Chatbot = ({ isOpen, onClose, initialMessage, autoStartVoice, onAmbulanceClick: onAmbulanceClickProp }: ChatbotProps) => {
   const { user } = useAuth();
-  const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5001';
+  // Uses global API_BASE_URL
   const [chats, setChats] = useState<Record<string, Message[]>>({
     default: [
       {

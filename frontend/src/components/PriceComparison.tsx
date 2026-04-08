@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { API_BASE_URL } from "@/lib/config";
 
 const PriceComparison = () => {
   const [drug, setDrug] = useState('Metformin');
@@ -12,7 +13,7 @@ const PriceComparison = () => {
   const compare = async () => {
     setLoading(true);
     try {
-      const url = `http://localhost:4000/api/price-compare?drug=${encodeURIComponent(drug)}&dosage=${encodeURIComponent(dosage)}`;
+      const url = `${API_BASE_URL}/api/price-compare?drug=${encodeURIComponent(drug)}&dosage=${encodeURIComponent(dosage)}`;
       const r = await fetch(url);
       const data = await r.json();
       setResults(data.providers || []);
