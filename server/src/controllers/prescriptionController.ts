@@ -283,3 +283,46 @@ export const saveRawPrescription = async (req: Request, res: Response): Promise<
     });
   }
 };
+
+/**
+ * SCAN PRESCRIPTION IMAGE - Uses Gemini Vision to directly OCR the image
+ */
+export const scanPrescriptionImage = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { image } = req.body;
+    if (!image) {
+      res.status(400).json({ error: 'image required (base64 data URL)' });
+      return;
+    }
+
+    const parts = image.split(';');
+    if (parts.length !== 2) {
+      res.status(400).json({ error: 'Invalid image format' });
+      return;
+    }
+    
+    const mimeType = parts[0].split(':')[1];
+    const data = parts[1].split(',')[1];
+
+    if (!mimeType || !data) {
+      res.status(400).json({ error: 'Invalid image format' });
+      return;
+    }
+
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const prompt = "You are an expert medical assistant. Carefully read this prescription image and extract all the handwritten or typed text, including the doctor's details, the names of the medicines, dosages, and instructions. Do not hallucinate. Output exactly what is written, formatting it clearly in plain text. Start the text directly without conversational filler.";
+    
+    const result = await model.generateContent([
+      prompt,
+      { inlineData: { data, mimeType } }
+    ]);
+    
+    const response = await result.response;
+    const text = response.text();
+    
+    res.json({ ok: true, text });
+  } catch (error: any) {
+    console.error('Scan Image Error:', error.message);
+    res.status(500).json({ error: 'Failed to extract text from image' });
+  }
+};

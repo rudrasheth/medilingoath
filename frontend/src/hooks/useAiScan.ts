@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import Tesseract from 'tesseract.js';
+import { API_BASE_URL } from '@/lib/config';
 
 interface ScanResult {
   text: string;
@@ -47,7 +47,7 @@ export const useAiScan = () => {
   const scan = async (file: File): Promise<string> => {
     setLoading(true);
     setError(null);
-    setProgress(0);
+    setProgress(10);
     
     try {
       // Validate file type
@@ -55,40 +55,45 @@ export const useAiScan = () => {
         throw new Error('Please upload an image file (JPEG, PNG, etc.)');
       }
 
-      // Use Tesseract.js for free OCR with comprehensive configuration
-      const result = await Tesseract.recognize(
-        file,
-        // Support multiple languages for better accuracy
-        // 'eng+hin+mar' for English, Hindi, and Marathi
-        // You can customize based on your needs
-        'eng',
-        {
-          logger: (m) => {
-            // Update progress during OCR processing
-            if (m.status === 'recognizing text') {
-              setProgress(Math.round(m.progress * 100));
-            } else if (m.status === 'initializing api') {
-              setProgress(10);
-            } else if (m.status === 'loading language traineddata') {
-              setProgress(25);
-            }
-          },
-          // Improve accuracy with these settings
-          tessedit_pageseg_mode: Tesseract.PSM.AUTO,
-          tessedit_ocr_engine_mode: Tesseract.OEM.LSTM_ONLY,
-        }
-      );
-
-      const extractedText = result.data.text.trim();
+      // Convert file to base64
+      const base64Data = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = error => reject(error);
+      });
       
-      if (!extractedText || extractedText.length < 5) {
-        throw new Error('No text detected in the image. Please upload a clearer prescription image.');
+      setProgress(40);
+
+      // Call our backend endpoint which uses Gemini Vision
+      const response = await fetch(`${API_BASE_URL}/api/scan`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ image: base64Data }),
+      });
+
+      setProgress(80);
+
+      if (!response.ok) {
+        throw new Error(`Server responded with ${response.status}`);
       }
 
-      // Confidence score check
-      const confidence = result.data.confidence;
-      console.log('OCR Confidence:', confidence);
+      const data = await response.json();
       
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      const extractedText = data.text?.trim() || '';
+      
+      if (!extractedText || extractedText.length < 5) {
+        throw new Error('No clear text detected in the image. Please upload a clearer prescription image.');
+      }
+
+      setProgress(100);
+
       // Parse medicine information from the text (optional, for future use)
       const medicines = parseMedicines(extractedText);
       console.log('Parsed medicines:', medicines);
@@ -101,7 +106,8 @@ export const useAiScan = () => {
       return fallback;
     } finally {
       setLoading(false);
-      setProgress(0);
+      // Optional: keep progress at 100 for a short moment before resetting if you prefer
+      setTimeout(() => setProgress(0), 500);
     }
   };
 

@@ -63,6 +63,10 @@ app.use('/api/share', shareRoutes);
 app.use('/api/cycle', cycleRoutes);
 app.use('/api/patient', patientRoutes);
 
+// Shared /api/scan endpoint for Gemini vision OCR
+import { scanPrescriptionImage } from './controllers/prescriptionController';
+app.post('/api/scan', scanPrescriptionImage);
+
 // Basic Health Check Route
 app.get('/', (req: Request, res: Response) => {
   res.send('MediLingo API is running...');
